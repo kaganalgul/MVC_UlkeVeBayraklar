@@ -1,6 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using MVC_UlkeVeBayraklar.Models;
+using MVC_UlkeVeBayraklar.Models.Data;
+using MVC_UlkeVeBayraklar.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -11,16 +15,29 @@ namespace MVC_UlkeVeBayraklar.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
+        private readonly DatabaseContext _db;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(DatabaseContext db)
         {
-            _logger = logger;
+            _db = db;
         }
 
-        public IActionResult Index()
+        public IActionResult Index(int? renk, string q)
         {
-            return View();
+            var vm = new HomeViewModel()
+            {
+                Renkler = _db.Renkler
+                    .Select(x => new SelectListItem() { Text = x.RenkAdi, Value = x.Id.ToString() })
+                    .ToList(),
+                Ulkeler = _db.Ulkeler
+                    .Include(x => x.BayrakRenkleri)
+                    .Where(x => (!renk.HasValue || x.BayrakRenkleri.Any(g => g.Id == renk))
+                        && (q == null || x.UlkeAd.Contains(q)))
+                    .ToList(),
+                SelectedRenkId = renk,
+                SearchCriteria = q
+            };
+            return View(vm);
         }
 
         public IActionResult Privacy()

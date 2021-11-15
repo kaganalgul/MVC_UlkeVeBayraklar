@@ -1,8 +1,53 @@
-﻿@{
+﻿@model HomeViewModel
+@{
     ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<h1>Movies</h1>
+
+<div class="row align-items-center mb-3">
+    <form class="col-auto row">
+        <div class="col-auto">
+            <select name="renk" asp-for="SelectedRenkId" asp-items="Model.Renkler" class="form-control">
+                <option value="">All</option>
+            </select>
+        </div>
+        <div class="col-auto">
+            <button class="btn btn-primary">List</button>
+        </div>
+    </form>
+
+    <form class="col-auto ml-auto">
+        <input type="text" name="q" asp-for="SearchCriteria" placeholder="Search.." class="form-control" />
+    </form>
 </div>
+
+<table id="tblMovies" class="table table-striped table-bordered mt-3">
+    <thead>
+        <tr>
+            <th>Id</th>
+            <th>Ulke Adı</th>
+            <th>Bayrak Renkleri</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (Ulke ulke in Model.Ulkeler)
+        {
+            <tr>
+                <td>@ulke.Id</td>
+                <td>@ulke.UlkeAd</td>
+                <td>@string.Join(", ", ulke.BayrakRenkleri.Select(x => x.RenkAdi))</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@section Scripts {
+    <script>
+    $("#tblMovies").DataTable({
+        searching: false,
+        lengthChange: false
+    });
+    </script>
+}
+
